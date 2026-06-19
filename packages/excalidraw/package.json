@@ -1,6 +1,6 @@
 {
   "name": "@praksis/excalidraw",
-  "version": "0.18.1-praksis.3",
+  "version": "0.18.1-praksis.4",
   "type": "module",
   "types": "./dist/types/excalidraw/index.d.ts",
   "main": "./dist/prod/index.js",
@@ -28,6 +28,15 @@
   },
   "description": "Excalidraw as a React component",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kostnytte/excalidraw.git",
+    "directory": "packages/excalidraw"
+  },
+  "bugs": {
+    "url": "https://github.com/kostnytte/excalidraw/issues"
+  },
+  "homepage": "https://github.com/kostnytte/excalidraw/tree/praksis/v0.18.1-sticky/packages/excalidraw",
   "keywords": [
     "excalidraw",
     "excalidraw-embed",
