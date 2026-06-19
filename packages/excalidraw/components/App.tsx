@@ -87,6 +87,7 @@ import {
   supportsResizeObserver,
   DEFAULT_COLLISION_THRESHOLD,
   DEFAULT_TEXT_ALIGN,
+  DEFAULT_ADAPTIVE_RADIUS,
   ARROW_TYPE,
   DEFAULT_REDUCED_GLOBAL_ALPHA,
   isSafari,
@@ -559,6 +560,13 @@ const gesture: Gesture = {
   initialDistance: null,
   initialScale: null,
 };
+
+const PRAKSIS_STICKY_NOTE = {
+  width: 180,
+  height: 120,
+  backgroundColor: "#ffec99",
+  strokeColor: "#b08a00",
+} as const;
 
 class App extends React.Component<AppProps, AppState> {
   canvas: AppClassProperties["canvas"];
@@ -6599,6 +6607,8 @@ class App extends React.Component<AppProps, AppState> {
         pointerDownState,
         this.state.activeTool.type,
       );
+    } else if (this.state.activeTool.type === TOOL_TYPE.sticky) {
+      this.createStickyElementOnPointerDown(pointerDownState);
     } else if (this.state.activeTool.type === "laser") {
       this.laserTrails.startPath(
         pointerDownState.lastCoords.x,
@@ -7858,6 +7868,65 @@ class App extends React.Component<AppProps, AppState> {
         newElement: element,
       });
     }
+  };
+
+  private createStickyElementOnPointerDown = (
+    pointerDownState: PointerDownState,
+  ): void => {
+    const [gridX, gridY] = getGridPoint(
+      pointerDownState.origin.x,
+      pointerDownState.origin.y,
+      this.lastPointerDownEvent?.[KEYS.CTRL_OR_CMD]
+        ? null
+        : this.getEffectiveGridSize(),
+    );
+
+    const topLayerFrame = this.getTopLayerFrameAtSceneCoords({
+      x: gridX,
+      y: gridY,
+    });
+
+    const sticky = newElement({
+      type: "rectangle",
+      x: gridX,
+      y: gridY,
+      width: PRAKSIS_STICKY_NOTE.width,
+      height: PRAKSIS_STICKY_NOTE.height,
+      strokeColor: PRAKSIS_STICKY_NOTE.strokeColor,
+      backgroundColor: PRAKSIS_STICKY_NOTE.backgroundColor,
+      fillStyle: "solid",
+      strokeWidth: this.state.currentItemStrokeWidth,
+      strokeStyle: this.state.currentItemStrokeStyle,
+      roughness: this.state.currentItemRoughness,
+      opacity: this.state.currentItemOpacity,
+      roundness: {
+        type: ROUNDNESS.ADAPTIVE_RADIUS,
+        value: DEFAULT_ADAPTIVE_RADIUS,
+      },
+      locked: false,
+      frameId: topLayerFrame ? topLayerFrame.id : null,
+      customData: {
+        praksisTool: "sticky",
+      },
+    }) as NonDeleted<ExcalidrawTextContainer>;
+
+    this.scene.insertElement(sticky);
+    this.setState(
+      {
+        multiElement: null,
+        newElement: null,
+        selectedElementIds: {
+          [sticky.id]: true,
+        },
+      },
+      () => {
+        this.startTextEditing({
+          sceneX: sticky.x + sticky.width / 2,
+          sceneY: sticky.y + sticky.height / 2,
+          container: sticky,
+        });
+      },
+    );
   };
 
   private createFrameElementOnPointerDown = (

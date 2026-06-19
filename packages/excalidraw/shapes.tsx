@@ -27,6 +27,7 @@ import {
   LineIcon,
   RectangleIcon,
   SelectionIcon,
+  StickyNoteIcon,
   TextIcon,
 } from "./components/icons";
 import {
@@ -107,6 +108,13 @@ export const SHAPES = [
     key: KEYS.T,
     numericKey: KEYS["8"],
     fillable: false,
+  },
+  {
+    icon: StickyNoteIcon,
+    value: "sticky",
+    key: KEYS.S,
+    numericKey: undefined,
+    fillable: true,
   },
   {
     icon: ImageIcon,
