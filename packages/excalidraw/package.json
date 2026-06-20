@@ -1,6 +1,6 @@
 {
-  "name": "@praksis/excalidraw",
-  "version": "0.18.1-praksis.5",
+  "name": "@kostnytte/excalidraw",
+  "version": "0.18.1-praksis.6",
   "type": "module",
   "types": "./dist/types/excalidraw/index.d.ts",
   "main": "./dist/prod/index.js",
