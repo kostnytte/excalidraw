@@ -300,6 +300,32 @@ describe("<Excalidraw/>", () => {
         expect(container.querySelector(".sidebar-trigger")).toBeNull();
       });
     });
+
+    describe("Test themeVariables", () => {
+      it("should apply host theme variables to the Excalidraw root", async () => {
+        const { container } = await render(
+          <Excalidraw
+            UIOptions={{
+              themeVariables: {
+                "--color-primary-light": "#e5e5e5",
+                "--border-radius-lg": "4px",
+              } as React.CSSProperties,
+            }}
+          />,
+        );
+
+        const excalidrawRoot = container.querySelector(
+          ".excalidraw",
+        ) as HTMLElement;
+
+        expect(excalidrawRoot.style.getPropertyValue("--color-primary-light")).toBe(
+          "#e5e5e5",
+        );
+        expect(excalidrawRoot.style.getPropertyValue("--border-radius-lg")).toBe(
+          "4px",
+        );
+      });
+    });
   });
 
   describe("Test theme prop", () => {

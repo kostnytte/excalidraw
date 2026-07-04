@@ -629,6 +629,7 @@ export type UIOptions = Partial<{
     mainMenu?: boolean;
     library?: boolean;
   };
+  themeVariables: React.CSSProperties;
   tools: {
     image: boolean;
   };

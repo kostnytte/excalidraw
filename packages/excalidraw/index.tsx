@@ -214,6 +214,12 @@ const areEqual = (prevProps: ExcalidrawProps, nextProps: ExcalidrawProps) => {
         return prevUIOptions?.chrome?.[key] === nextUIOptions?.chrome?.[key];
       });
     }
+    if (key === "themeVariables") {
+      return isShallowEqual(
+        prevUIOptions.themeVariables ?? {},
+        nextUIOptions.themeVariables ?? {},
+      );
+    }
     return prevUIOptions[key] === nextUIOptions[key];
   });
 
