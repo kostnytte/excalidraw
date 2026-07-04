@@ -625,6 +625,10 @@ export type CanvasActions = Partial<{
 export type UIOptions = Partial<{
   dockedSidebarBreakpoint: number;
   canvasActions: CanvasActions;
+  chrome: {
+    mainMenu?: boolean;
+    library?: boolean;
+  };
   tools: {
     image: boolean;
   };
@@ -784,6 +788,7 @@ export interface ExcalidrawImperativeAPI {
   setCursor: InstanceType<typeof App>["setCursor"];
   resetCursor: InstanceType<typeof App>["resetCursor"];
   toggleSidebar: InstanceType<typeof App>["toggleSidebar"];
+  toggleMainMenu: InstanceType<typeof App>["toggleMainMenu"];
   /**
    * Disables rendering of frames (including element clipping), but currently
    * the frames are still interactive in edit mode. As such, this API should be

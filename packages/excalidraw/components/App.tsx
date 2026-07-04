@@ -748,6 +748,7 @@ class App extends React.Component<AppProps, AppState> {
         resetCursor: this.resetCursor,
         updateFrameRendering: this.updateFrameRendering,
         toggleSidebar: this.toggleSidebar,
+        toggleMainMenu: this.toggleMainMenu,
         onChange: (cb) => this.onChangeEmitter.on(cb),
         onPointerDown: (cb) => this.onPointerDownEmitter.on(cb),
         onPointerUp: (cb) => this.onPointerUpEmitter.on(cb),
@@ -4001,6 +4002,17 @@ class App extends React.Component<AppProps, AppState> {
     this.setState({ openSidebar: nextState });
 
     return !!nextName;
+  };
+
+  /**
+   * @returns whether the canvas/main menu was toggled on or off
+   */
+  public toggleMainMenu = (): boolean => {
+    const nextOpen = this.state.openMenu === "canvas" ? null : "canvas";
+
+    this.setState({ openMenu: nextOpen });
+
+    return nextOpen === "canvas";
   };
 
   private updateCurrentCursorPosition = withBatchedUpdates(

@@ -55,6 +55,7 @@ import { TTDDialog } from "./TTDDialog/TTDDialog";
 import { Stats } from "./Stats";
 import { actionToggleStats } from "../actions";
 import ElementLinkDialog from "./ElementLinkDialog";
+import { UIOptionsContext } from "../context/ui-options";
 
 import "./LayerUI.scss";
 import "./Toolbar.scss";
@@ -145,6 +146,8 @@ const LayerUI = ({
   const TunnelsJotaiProvider = tunnels.tunnelsJotai.Provider;
 
   const [eyeDropperState, setEyeDropperState] = useAtom(activeEyeDropperAtom);
+  const shouldRenderMainMenuTrigger = UIOptions.chrome?.mainMenu !== false;
+  const shouldRenderDefaultLibrary = UIOptions.chrome?.library !== false;
 
   const renderJSONExportDialog = () => {
     if (!UIOptions.canvasActions.export) {
@@ -190,7 +193,9 @@ const LayerUI = ({
       {/* wrapping to Fragment stops React from occasionally complaining
                 about identical Keys */}
       <tunnels.MainMenuTunnel.Out />
-      {renderWelcomeScreen && <tunnels.WelcomeScreenMenuHintTunnel.Out />}
+      {shouldRenderMainMenuTrigger && renderWelcomeScreen && (
+        <tunnels.WelcomeScreenMenuHintTunnel.Out />
+      )}
     </div>
   );
 
@@ -341,6 +346,7 @@ const LayerUI = ({
             {renderTopRightUI?.(device.editor.isMobile, appState)}
             {!appState.viewModeEnabled &&
               appState.openDialog?.name !== "elementLinkSelector" &&
+              shouldRenderDefaultLibrary &&
               // hide button when sidebar docked
               (!isSidebarDocked ||
                 appState.openSidebar?.name !== DEFAULT_SIDEBAR.name) && (
@@ -362,6 +368,10 @@ const LayerUI = ({
   };
 
   const renderSidebars = () => {
+    if (!shouldRenderDefaultLibrary) {
+      return null;
+    }
+
     return (
       <DefaultSidebar
         __fallback
@@ -388,23 +398,25 @@ const LayerUI = ({
           tunneled away. We only render tunneled components that actually
         have defaults when host do not render anything. */}
       <DefaultMainMenu UIOptions={UIOptions} />
-      <DefaultSidebar.Trigger
-        __fallback
-        icon={LibraryIcon}
-        title={capitalizeString(t("toolBar.library"))}
-        onToggle={(open) => {
-          if (open) {
-            trackEvent(
-              "sidebar",
-              `${DEFAULT_SIDEBAR.name} (open)`,
-              `button (${device.editor.isMobile ? "mobile" : "desktop"})`,
-            );
-          }
-        }}
-        tab={DEFAULT_SIDEBAR.defaultTab}
-      >
-        {t("toolBar.library")}
-      </DefaultSidebar.Trigger>
+      {shouldRenderDefaultLibrary && (
+        <DefaultSidebar.Trigger
+          __fallback
+          icon={LibraryIcon}
+          title={capitalizeString(t("toolBar.library"))}
+          onToggle={(open) => {
+            if (open) {
+              trackEvent(
+                "sidebar",
+                `${DEFAULT_SIDEBAR.name} (open)`,
+                `button (${device.editor.isMobile ? "mobile" : "desktop"})`,
+              );
+            }
+          }}
+          tab={DEFAULT_SIDEBAR.defaultTab}
+        >
+          {t("toolBar.library")}
+        </DefaultSidebar.Trigger>
+      )}
       <DefaultOverwriteConfirmDialog />
       {appState.openDialog?.name === "ttd" && <TTDDialog __fallback />}
       {/* ------------------------------------------------------------------ */}
@@ -560,11 +572,13 @@ const LayerUI = ({
 
   return (
     <UIAppStateContext.Provider value={appState}>
-      <TunnelsJotaiProvider>
-        <TunnelsContext.Provider value={tunnels}>
-          {layerUIJSX}
-        </TunnelsContext.Provider>
-      </TunnelsJotaiProvider>
+      <UIOptionsContext.Provider value={UIOptions}>
+        <TunnelsJotaiProvider>
+          <TunnelsContext.Provider value={tunnels}>
+            {layerUIJSX}
+          </TunnelsContext.Provider>
+        </TunnelsJotaiProvider>
+      </UIOptionsContext.Provider>
     </UIAppStateContext.Provider>
   );
 };

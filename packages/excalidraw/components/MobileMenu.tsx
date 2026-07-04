@@ -71,6 +71,8 @@ export const MobileMenu = ({
     MainMenuTunnel,
     DefaultSidebarTriggerTunnel,
   } = useTunnels();
+  const shouldRenderDefaultLibrary = UIOptions.chrome?.library !== false;
+
   const renderToolbar = () => {
     return (
       <FixedSideContainer side="top" className="App-top-bar">
@@ -93,7 +95,8 @@ export const MobileMenu = ({
                 {renderTopRightUI && renderTopRightUI(true, appState)}
                 <div className="mobile-misc-tools-container">
                   {!appState.viewModeEnabled &&
-                    appState.openDialog?.name !== "elementLinkSelector" && (
+                    appState.openDialog?.name !== "elementLinkSelector" &&
+                    shouldRenderDefaultLibrary && (
                       <DefaultSidebarTriggerTunnel.Out />
                     )}
                   <PenModeButton

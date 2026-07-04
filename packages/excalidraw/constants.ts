@@ -289,6 +289,10 @@ export const DEFAULT_UI_OPTIONS: AppProps["UIOptions"] = {
     toggleTheme: null,
     saveAsImage: true,
   },
+  chrome: {
+    mainMenu: true,
+    library: true,
+  },
   tools: {
     image: true,
   },

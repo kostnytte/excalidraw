@@ -1,10 +1,18 @@
 import React from "react";
-import { fireEvent, GlobalTestState, toggleMenu, render } from "./test-utils";
+import {
+  act,
+  fireEvent,
+  GlobalTestState,
+  toggleMenu,
+  render,
+} from "./test-utils";
 import { Excalidraw, Footer, MainMenu } from "../index";
 import { queryByText, queryByTestId } from "@testing-library/react";
 import { THEME } from "../constants";
 import { t } from "../i18n";
 import { useMemo } from "react";
+import { resolvablePromise } from "../utils";
+import type { ExcalidrawImperativeAPI } from "../types";
 
 const { h } = window;
 
@@ -251,6 +259,45 @@ describe("<Excalidraw/>", () => {
         toggleMenu(container);
         // load button shouldn't be rendered since `UIActions.canvasActions.loadScene` is `false`
         expect(queryByTestId(container, "load-button")).toBeNull();
+      });
+    });
+
+    describe("Test chrome", () => {
+      it("should not render the main menu trigger when chrome.mainMenu is false", async () => {
+        const { container } = await render(
+          <Excalidraw UIOptions={{ chrome: { mainMenu: false } }} />,
+        );
+
+        expect(queryByTestId(container, "main-menu-trigger")).toBeNull();
+        expect(queryByTestId(container, "dropdown-menu")).toBeNull();
+      });
+
+      it("should toggle the real main menu through the API when chrome.mainMenu is false", async () => {
+        const excalidrawAPIPromise =
+          resolvablePromise<ExcalidrawImperativeAPI>();
+        const { container } = await render(
+          <Excalidraw
+            excalidrawAPI={(api) => excalidrawAPIPromise.resolve(api)}
+            UIOptions={{ chrome: { mainMenu: false } }}
+          />,
+        );
+        const excalidrawAPI = await excalidrawAPIPromise;
+
+        expect(queryByTestId(container, "main-menu-trigger")).toBeNull();
+
+        act(() => {
+          excalidrawAPI.toggleMainMenu();
+        });
+
+        expect(queryByTestId(container, "dropdown-menu")).not.toBeNull();
+      });
+
+      it("should not render the default library trigger when chrome.library is false", async () => {
+        const { container } = await render(
+          <Excalidraw UIOptions={{ chrome: { library: false } }} />,
+        );
+
+        expect(container.querySelector(".sidebar-trigger")).toBeNull();
       });
     });
   });

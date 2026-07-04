@@ -55,6 +55,7 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
   } = props;
 
   const canvasActions = props.UIOptions?.canvasActions;
+  const chrome = props.UIOptions?.chrome;
 
   // FIXME normalize/set defaults in parent component so that the memo resolver
   // compares the same values
@@ -63,6 +64,10 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     canvasActions: {
       ...DEFAULT_UI_OPTIONS.canvasActions,
       ...canvasActions,
+    },
+    chrome: {
+      ...DEFAULT_UI_OPTIONS.chrome,
+      ...chrome,
     },
     tools: {
       image: props.UIOptions?.tools?.image ?? true,
@@ -199,6 +204,14 @@ const areEqual = (prevProps: ExcalidrawProps, nextProps: ExcalidrawProps) => {
           prevUIOptions?.canvasActions?.[key] ===
           nextUIOptions?.canvasActions?.[key]
         );
+      });
+    }
+    if (key === "chrome") {
+      const chromeOptionKeys = Object.keys(prevUIOptions.chrome!) as (keyof NonNullable<
+        typeof DEFAULT_UI_OPTIONS.chrome
+      >)[];
+      return chromeOptionKeys.every((key) => {
+        return prevUIOptions?.chrome?.[key] === nextUIOptions?.chrome?.[key];
       });
     }
     return prevUIOptions[key] === nextUIOptions[key];

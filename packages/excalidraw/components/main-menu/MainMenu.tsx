@@ -11,6 +11,7 @@ import { withInternalFallback } from "../hoc/withInternalFallback";
 import { composeEventHandlers } from "../../utils";
 import { useTunnels } from "../../context/tunnels";
 import { useUIAppState } from "../../context/ui-appState";
+import { useUIOptions } from "../../context/ui-options";
 
 const MainMenu = Object.assign(
   withInternalFallback(
@@ -28,25 +29,29 @@ const MainMenu = Object.assign(
       const { MainMenuTunnel } = useTunnels();
       const device = useDevice();
       const appState = useUIAppState();
+      const UIOptions = useUIOptions();
       const setAppState = useExcalidrawSetAppState();
       const onClickOutside = device.editor.isMobile
         ? undefined
         : () => setAppState({ openMenu: null });
+      const shouldRenderTrigger = UIOptions.chrome?.mainMenu !== false;
 
       return (
         <MainMenuTunnel.In>
           <DropdownMenu open={appState.openMenu === "canvas"}>
-            <DropdownMenu.Trigger
-              onToggle={() => {
-                setAppState({
-                  openMenu: appState.openMenu === "canvas" ? null : "canvas",
-                });
-              }}
-              data-testid="main-menu-trigger"
-              className="main-menu-trigger"
-            >
-              {HamburgerMenuIcon}
-            </DropdownMenu.Trigger>
+            {shouldRenderTrigger && (
+              <DropdownMenu.Trigger
+                onToggle={() => {
+                  setAppState({
+                    openMenu: appState.openMenu === "canvas" ? null : "canvas",
+                  });
+                }}
+                data-testid="main-menu-trigger"
+                className="main-menu-trigger"
+              >
+                {HamburgerMenuIcon}
+              </DropdownMenu.Trigger>
+            )}
             <DropdownMenu.Content
               onClickOutside={onClickOutside}
               onSelect={composeEventHandlers(onSelect, () => {
