@@ -10,6 +10,8 @@ interface PropertiesPopoverProps {
   className?: string;
   container: HTMLDivElement | null;
   children: ReactNode;
+  side?: Popover.PopoverContentProps["side"];
+  align?: Popover.PopoverContentProps["align"];
   style?: object;
   onClose: () => void;
   onKeyDown?: React.KeyboardEventHandler<HTMLDivElement>;
@@ -27,6 +29,8 @@ export const PropertiesPopover = React.forwardRef<
       className,
       container,
       children,
+      side,
+      align,
       style,
       onClose,
       onKeyDown,
@@ -45,14 +49,16 @@ export const PropertiesPopover = React.forwardRef<
           className={clsx("focus-visible-none", className)}
           data-prevent-outside-click
           side={
-            device.editor.isMobile && !device.viewport.isLandscape
+            side ??
+            (device.editor.isMobile && !device.viewport.isLandscape
               ? "bottom"
-              : "right"
+              : "right")
           }
           align={
-            device.editor.isMobile && !device.viewport.isLandscape
+            align ??
+            (device.editor.isMobile && !device.viewport.isLandscape
               ? "center"
-              : "start"
+              : "start")
           }
           alignOffset={-16}
           sideOffset={20}

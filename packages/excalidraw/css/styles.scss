@@ -384,6 +384,11 @@ body.excalidraw-cursor-resize * {
   }
 
   .selected-shape-actions--bottom {
+    position: absolute;
+    left: 50%;
+    bottom: calc(100% + 0.5rem);
+    transform: translateX(-50%);
+    z-index: 1;
     max-width: min(calc(100vw - 28rem), 60rem);
 
     .App-toolbar-context {
