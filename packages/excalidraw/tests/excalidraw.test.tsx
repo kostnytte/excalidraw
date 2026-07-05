@@ -13,6 +13,7 @@ import { t } from "../i18n";
 import { useMemo } from "react";
 import { resolvablePromise } from "../utils";
 import type { ExcalidrawImperativeAPI } from "../types";
+import { API } from "./helpers/api";
 
 const { h } = window;
 
@@ -320,6 +321,27 @@ describe("<Excalidraw/>", () => {
         ).toBeNull();
         expect(
           container.querySelector(".App-menu_bottom .App-toolbar"),
+        ).not.toBeNull();
+      });
+
+      it("should render selected shape actions as a bottom context bar when toolbarPosition is bottom", async () => {
+        const rectangle = API.createElement({ type: "rectangle" });
+        const { container } = await render(
+          <Excalidraw
+            initialData={{ elements: [rectangle] }}
+            UIOptions={{ chrome: { toolbarPosition: "bottom" } }}
+          />,
+        );
+
+        API.setSelectedElements([h.elements[0]]);
+
+        expect(
+          container.querySelector(".App-menu_top .selected-shape-actions"),
+        ).toBeNull();
+        expect(
+          container.querySelector(
+            ".App-menu_bottom .selected-shape-actions--bottom",
+          ),
         ).not.toBeNull();
       });
     });

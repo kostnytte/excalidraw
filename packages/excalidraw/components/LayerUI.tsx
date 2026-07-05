@@ -150,6 +150,10 @@ const LayerUI = ({
   const shouldRenderDefaultLibrary = UIOptions.chrome?.library !== false;
   const shouldRenderHelpButton = UIOptions.chrome?.help !== false;
   const toolbarPosition = UIOptions.chrome?.toolbarPosition ?? "top";
+  const shouldRenderSelectedShapeActions = showSelectedShapeActions(
+    appState,
+    elements,
+  );
 
   const renderJSONExportDialog = () => {
     if (!UIOptions.canvasActions.export) {
@@ -201,15 +205,24 @@ const LayerUI = ({
     </div>
   );
 
-  const renderSelectedShapeActions = () => (
+  const renderSelectedShapeActions = (placement: "top" | "bottom") => (
     <Section
       heading="selectedShapeActions"
-      className={clsx("selected-shape-actions zen-mode-transition", {
-        "transition-left": appState.zenModeEnabled,
-      })}
+      className={clsx(
+        "selected-shape-actions zen-mode-transition",
+        `selected-shape-actions--${placement}`,
+        {
+          "transition-left":
+            appState.zenModeEnabled && placement === "top",
+          "layer-ui__wrapper__footer-left--transition-bottom":
+            appState.zenModeEnabled && placement === "bottom",
+        },
+      )}
     >
       <Island
-        className={CLASSES.SHAPE_ACTIONS_MENU}
+        className={clsx(CLASSES.SHAPE_ACTIONS_MENU, {
+          "App-toolbar-context": placement === "bottom",
+        })}
         padding={2}
         style={{
           // we want to make sure this doesn't overflow so subtracting the
@@ -318,11 +331,6 @@ const LayerUI = ({
   );
 
   const renderFixedSideContainer = () => {
-    const shouldRenderSelectedShapeActions = showSelectedShapeActions(
-      appState,
-      elements,
-    );
-
     const shouldShowStats =
       appState.stats.open &&
       !appState.zenModeEnabled &&
@@ -334,7 +342,9 @@ const LayerUI = ({
         <div className="App-menu App-menu_top">
           <Stack.Col gap={6} className={clsx("App-menu_top__left")}>
             {renderCanvasActions()}
-            {shouldRenderSelectedShapeActions && renderSelectedShapeActions()}
+            {toolbarPosition === "top" &&
+              shouldRenderSelectedShapeActions &&
+              renderSelectedShapeActions("top")}
           </Stack.Col>
           {!appState.viewModeEnabled &&
             toolbarPosition === "top" &&
@@ -566,7 +576,13 @@ const LayerUI = ({
                 !appState.viewModeEnabled &&
                 toolbarPosition === "bottom" &&
                 appState.openDialog?.name !== "elementLinkSelector"
-                  ? renderToolbar("bottom")
+                  ? (
+                    <>
+                      {shouldRenderSelectedShapeActions &&
+                        renderSelectedShapeActions("bottom")}
+                      {renderToolbar("bottom")}
+                    </>
+                  )
                   : null
               }
             />
