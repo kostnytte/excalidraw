@@ -364,6 +364,20 @@ body.excalidraw-cursor-resize * {
     section {
       display: flex;
     }
+
+    &--has-center-toolbar {
+      align-items: center;
+
+      .footer-center {
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        width: auto;
+        margin: 0;
+        justify-content: center;
+        transform: translateX(-50%);
+      }
+    }
   }
 
   .App-menu_bottom > *:first-child {

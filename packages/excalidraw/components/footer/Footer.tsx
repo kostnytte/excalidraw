@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import type React from "react";
 import { actionShortcuts } from "../../actions";
 import type { ActionManager } from "../../actions/manager";
 import {
@@ -19,11 +20,15 @@ const Footer = ({
   actionManager,
   showExitZenModeBtn,
   renderWelcomeScreen,
+  renderHelpButton,
+  centerContent,
 }: {
   appState: UIAppState;
   actionManager: ActionManager;
   showExitZenModeBtn: boolean;
   renderWelcomeScreen: boolean;
+  renderHelpButton: boolean;
+  centerContent?: React.ReactNode;
 }) => {
   const { FooterCenterTunnel, WelcomeScreenHelpHintTunnel } = useTunnels();
 
@@ -34,7 +39,12 @@ const Footer = ({
   return (
     <footer
       role="contentinfo"
-      className="layer-ui__wrapper__footer App-menu App-menu_bottom"
+      className={clsx(
+        "layer-ui__wrapper__footer App-menu App-menu_bottom",
+        {
+          "App-menu_bottom--has-center-toolbar": centerContent,
+        },
+      )}
     >
       <div
         className={clsx("layer-ui__wrapper__footer-left zen-mode-transition", {
@@ -70,19 +80,25 @@ const Footer = ({
           </Section>
         </Stack.Col>
       </div>
+      {centerContent && <div className="footer-center">{centerContent}</div>}
       <FooterCenterTunnel.Out />
-      <div
-        className={clsx("layer-ui__wrapper__footer-right zen-mode-transition", {
-          "transition-right": appState.zenModeEnabled,
-        })}
-      >
-        <div style={{ position: "relative" }}>
-          {renderWelcomeScreen && <WelcomeScreenHelpHintTunnel.Out />}
-          <HelpButton
-            onClick={() => actionManager.executeAction(actionShortcuts)}
-          />
+      {renderHelpButton && (
+        <div
+          className={clsx(
+            "layer-ui__wrapper__footer-right zen-mode-transition",
+            {
+              "transition-right": appState.zenModeEnabled,
+            },
+          )}
+        >
+          <div style={{ position: "relative" }}>
+            {renderWelcomeScreen && <WelcomeScreenHelpHintTunnel.Out />}
+            <HelpButton
+              onClick={() => actionManager.executeAction(actionShortcuts)}
+            />
+          </div>
         </div>
-      </div>
+      )}
       <ExitZenModeAction
         actionManager={actionManager}
         showExitZenModeBtn={showExitZenModeBtn}

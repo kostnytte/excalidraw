@@ -299,6 +299,29 @@ describe("<Excalidraw/>", () => {
 
         expect(container.querySelector(".sidebar-trigger")).toBeNull();
       });
+
+      it("should not render the help button when chrome.help is false", async () => {
+        const { container } = await render(
+          <Excalidraw UIOptions={{ chrome: { help: false } }} />,
+        );
+
+        expect(container.querySelector(".help-icon")).toBeNull();
+      });
+
+      it("should render the toolbar in the footer when chrome.toolbarPosition is bottom", async () => {
+        const { container } = await render(
+          <Excalidraw
+            UIOptions={{ chrome: { toolbarPosition: "bottom" } }}
+          />,
+        );
+
+        expect(
+          container.querySelector(".App-menu_top .App-toolbar"),
+        ).toBeNull();
+        expect(
+          container.querySelector(".App-menu_bottom .App-toolbar"),
+        ).not.toBeNull();
+      });
     });
 
     describe("Test themeVariables", () => {

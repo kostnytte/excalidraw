@@ -628,6 +628,8 @@ export type UIOptions = Partial<{
   chrome: {
     mainMenu?: boolean;
     library?: boolean;
+    help?: boolean;
+    toolbarPosition?: "top" | "bottom";
   };
   themeVariables: React.CSSProperties;
   tools: {

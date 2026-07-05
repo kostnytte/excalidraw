@@ -292,6 +292,8 @@ export const DEFAULT_UI_OPTIONS: AppProps["UIOptions"] = {
   chrome: {
     mainMenu: true,
     library: true,
+    help: true,
+    toolbarPosition: "top",
   },
   tools: {
     image: true,
