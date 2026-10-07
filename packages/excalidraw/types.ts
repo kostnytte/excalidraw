@@ -25,6 +25,7 @@ import type {
   ExcalidrawNonSelectionElement,
 } from "./element/types";
 import type { Action } from "./actions/types";
+import type { CustomFontFamilyDefinition } from "./fonts/Fonts";
 import type { LinearElementEditor } from "./element/linearElementEditor";
 import type { SuggestedBinding } from "./element/binding";
 import type { ImportedDataState } from "./data/types";
@@ -584,6 +585,14 @@ export interface ExcalidrawProps {
   ) => JSX.Element | null;
   aiEnabled?: boolean;
   showDeprecatedFonts?: boolean;
+  /**
+   * Praksis fork (funn 3): host-registered font families that REPLACE the
+   * built-in font choices in the picker. Each entry is one registered family;
+   * in the Praksis use-case each is a distinct *weight* of the same typeface
+   * (Excalidraw elements carry a fontFamily id but no fontWeight). When absent,
+   * the built-in Excalidraw fonts are used unchanged.
+   */
+  fontFamilies?: readonly CustomFontFamilyDefinition[];
 }
 
 export type SceneData = {
@@ -630,6 +639,14 @@ export type UIOptions = Partial<{
     library?: boolean;
     help?: boolean;
     toolbarPosition?: "top" | "bottom";
+    /**
+     * Praksis fork opt-in. When true (and toolbarPosition === "bottom"),
+     * the selected-shape actions render as a compact, contextual context bar
+     * (single color swatches + grouped "Style" / "More" popovers) instead of a
+     * flat always-open palette. Default off; upstream/mobile/top-toolbar
+     * behaviour is untouched when this flag is absent.
+     */
+    compactContextBar?: boolean;
   };
   themeVariables: React.CSSProperties;
   tools: {
@@ -690,6 +707,7 @@ export type AppClassProperties = {
   toggleLock: App["toggleLock"];
   setActiveTool: App["setActiveTool"];
   setOpenDialog: App["setOpenDialog"];
+  setOpenPopup: App["setOpenPopup"];
   insertEmbeddableElement: App["insertEmbeddableElement"];
   onMagicframeToolSelect: App["onMagicframeToolSelect"];
   getName: App["getName"];
