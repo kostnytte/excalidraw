@@ -1,6 +1,6 @@
 {
   "name": "@kostnytte/excalidraw",
-  "version": "0.18.1-praksis.16",
+  "version": "0.18.1-praksis.17",
   "type": "module",
   "types": "./dist/types/excalidraw/index.d.ts",
   "main": "./dist/prod/index.js",
@@ -73,7 +73,7 @@
     "@excalidraw/mermaid-to-excalidraw": "2.2.2",
     "@excalidraw/random-username": "1.1.0",
     "@radix-ui/react-popover": "1.1.6",
-    "@radix-ui/react-tabs": "1.0.2",
+    "@radix-ui/react-tabs": "1.1.13",
     "browser-fs-access": "0.29.1",
     "canvas-roundrect-polyfill": "0.0.1",
     "clsx": "1.1.1",
