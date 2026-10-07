@@ -17,6 +17,7 @@ import type {
 } from "../types";
 import { capitalizeString, isShallowEqual } from "../utils";
 import { SelectedShapeActions, ShapesSwitcher } from "./Actions";
+import { CompactSelectedShapeActions } from "./CompactSelectedShapeActions";
 import { ErrorDialog } from "./ErrorDialog";
 import { ImageExportDialog } from "./ImageExportDialog";
 import { FixedSideContainer } from "./FixedSideContainer";
@@ -150,6 +151,12 @@ const LayerUI = ({
   const shouldRenderDefaultLibrary = UIOptions.chrome?.library !== false;
   const shouldRenderHelpButton = UIOptions.chrome?.help !== false;
   const toolbarPosition = UIOptions.chrome?.toolbarPosition ?? "top";
+  // Praksis fork opt-in: compact contextual bar for selected-shape actions.
+  // Only applies to the bottom toolbar layout; top/mobile are untouched.
+  const useCompactContextBar =
+    UIOptions.chrome?.compactContextBar === true &&
+    toolbarPosition === "bottom" &&
+    !device.editor.isMobile;
   const shouldRenderSelectedShapeActions = showSelectedShapeActions(
     appState,
     elements,
@@ -212,8 +219,7 @@ const LayerUI = ({
         "selected-shape-actions zen-mode-transition",
         `selected-shape-actions--${placement}`,
         {
-          "transition-left":
-            appState.zenModeEnabled && placement === "top",
+          "transition-left": appState.zenModeEnabled && placement === "top",
           "layer-ui__wrapper__footer-left--transition-bottom":
             appState.zenModeEnabled && placement === "bottom",
         },
@@ -234,6 +240,26 @@ const LayerUI = ({
           appState={appState}
           elementsMap={app.scene.getNonDeletedElementsMap()}
           renderAction={actionManager.renderAction}
+          app={app}
+        />
+      </Island>
+    </Section>
+  );
+
+  const renderCompactSelectedShapeActions = () => (
+    <Section
+      heading="selectedShapeActions"
+      className="selected-shape-actions selected-shape-actions--compact zen-mode-transition"
+    >
+      <Island
+        className="App-toolbar-context compact-context-island"
+        padding={1}
+      >
+        <CompactSelectedShapeActions
+          appState={appState}
+          elementsMap={app.scene.getNonDeletedElementsMap()}
+          renderAction={actionManager.renderAction}
+          actionManager={actionManager}
           app={app}
         />
       </Island>
@@ -348,9 +374,8 @@ const LayerUI = ({
           </Stack.Col>
           {!appState.viewModeEnabled &&
             toolbarPosition === "top" &&
-            appState.openDialog?.name !== "elementLinkSelector" && (
-              renderToolbar("top")
-            )}
+            appState.openDialog?.name !== "elementLinkSelector" &&
+            renderToolbar("top")}
           <div
             className={clsx(
               "layer-ui__wrapper__top-right zen-mode-transition",
@@ -566,6 +591,16 @@ const LayerUI = ({
           >
             {renderWelcomeScreen && <tunnels.WelcomeScreenCenterTunnel.Out />}
             {renderFixedSideContainer()}
+            {!appState.viewModeEnabled &&
+              toolbarPosition === "bottom" &&
+              appState.openDialog?.name !== "elementLinkSelector" &&
+              shouldRenderSelectedShapeActions && (
+                <div className="App-bottom-context-actions">
+                  {useCompactContextBar
+                    ? renderCompactSelectedShapeActions()
+                    : renderSelectedShapeActions("bottom")}
+                </div>
+              )}
             <Footer
               appState={appState}
               actionManager={actionManager}
@@ -576,13 +611,7 @@ const LayerUI = ({
                 !appState.viewModeEnabled &&
                 toolbarPosition === "bottom" &&
                 appState.openDialog?.name !== "elementLinkSelector"
-                  ? (
-                    <>
-                      {shouldRenderSelectedShapeActions &&
-                        renderSelectedShapeActions("bottom")}
-                      {renderToolbar("bottom")}
-                    </>
-                  )
+                  ? renderToolbar("bottom")
                   : null
               }
             />

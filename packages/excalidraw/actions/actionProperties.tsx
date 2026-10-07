@@ -306,12 +306,13 @@ export const actionChangeStrokeColor = register({
         : CaptureUpdateAction.EVENTUALLY,
     };
   },
-  PanelComponent: ({ elements, appState, updateData, appProps }) => (
+  PanelComponent: ({ elements, appState, updateData, appProps, data }) => (
     <>
-      <h3 aria-hidden="true">{t("labels.stroke")}</h3>
+      {!data?.compact && <h3 aria-hidden="true">{t("labels.stroke")}</h3>}
       <ColorPicker
         topPicks={DEFAULT_ELEMENT_STROKE_PICKS}
         palette={DEFAULT_ELEMENT_STROKE_COLOR_PALETTE}
+        hideTopPicks={!!data?.compact}
         type="elementStroke"
         label={t("labels.stroke")}
         color={getFormValue(
@@ -352,12 +353,13 @@ export const actionChangeBackgroundColor = register({
         : CaptureUpdateAction.EVENTUALLY,
     };
   },
-  PanelComponent: ({ elements, appState, updateData, appProps }) => (
+  PanelComponent: ({ elements, appState, updateData, appProps, data }) => (
     <>
-      <h3 aria-hidden="true">{t("labels.background")}</h3>
+      {!data?.compact && <h3 aria-hidden="true">{t("labels.background")}</h3>}
       <ColorPicker
         topPicks={DEFAULT_ELEMENT_BACKGROUND_PICKS}
         palette={DEFAULT_ELEMENT_BACKGROUND_COLOR_PALETTE}
+        hideTopPicks={!!data?.compact}
         type="elementBackground"
         label={t("labels.background")}
         color={getFormValue(

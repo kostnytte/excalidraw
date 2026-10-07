@@ -3,6 +3,7 @@ import { average } from "@excalidraw/math";
 import { COLOR_PALETTE } from "./colors";
 import type { EVENT } from "./constants";
 import {
+  CUSTOM_FONT_FAMILY_NAMES,
   DEFAULT_VERSION,
   FONT_FAMILY,
   getFontFamilyFallbacks,
@@ -100,6 +101,14 @@ export const getFontFamilyString = ({
         .map((x) => `, ${x}`)
         .join("")}`;
     }
+  }
+  // Praksis fork (funn 3): host-registered custom families are not in the
+  // built-in FONT_FAMILY enum, so resolve their CSS name from the shared
+  // runtime map. Without this, custom ids would render in the emoji fallback
+  // on both the canvas and SVG/PNG export.
+  const customName = CUSTOM_FONT_FAMILY_NAMES.get(fontFamily);
+  if (customName) {
+    return `${customName}, ${WINDOWS_EMOJI_FALLBACK_FONT}`;
   }
   return WINDOWS_EMOJI_FALLBACK_FONT;
 };

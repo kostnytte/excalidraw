@@ -155,6 +155,15 @@ export const getFontFamilyFallbacks = (
   }
 };
 
+/**
+ * Praksis fork (funn 3): runtime id → CSS family name map for HOST-registered
+ * custom font families. Lives here (a dependency-free leaf module) so both the
+ * font registry (`Fonts.registerCustomFonts`, the writer) and the resolver
+ * (`getFontFamilyString` in utils.ts, the reader) can share it without a
+ * circular import. Empty unless a host registers custom fonts.
+ */
+export const CUSTOM_FONT_FAMILY_NAMES = new Map<number, string>();
+
 export const THEME = {
   LIGHT: "light",
   DARK: "dark",

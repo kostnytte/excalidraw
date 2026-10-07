@@ -1,4 +1,5 @@
 import {
+  CUSTOM_FONT_FAMILY_NAMES,
   FONT_FAMILY,
   FONT_FAMILY_FALLBACKS,
   CJK_HAND_DRAWN_FALLBACK_FONT,
@@ -346,6 +347,89 @@ export class Fonts {
     return this.registered;
   }
 
+  // ---------------------------------------------------------------------------
+  // Praksis fork (funn 3): host-registered custom font families.
+  //
+  // Excalidraw identifies a font family by a numeric id and resolves that id
+  // back to a CSS family *name* by scanning the built-in `FONT_FAMILY` enum
+  // (see `getFontFamilyString` in utils.ts). Host-registered families use ids
+  // that are NOT in that enum, so we keep a runtime id→name map here that the
+  // resolver consults before falling back. This is the single extension point
+  // the code's own TODO ("abandon number value to support custom fonts")
+  // pointed at — done narrowly, without touching the built-in path.
+  // ---------------------------------------------------------------------------
+  /**
+   * label shown in the picker for each host-registered family (id → label),
+   * so the compact "Vekt" control can show host-defined weight names.
+   */
+  private static _customFamilyLabels: Map<number, string> = new Map();
+
+  /** id → CSS family name for host-registered families (empty by default). */
+  public static get customFamilyNames(): ReadonlyMap<number, string> {
+    return CUSTOM_FONT_FAMILY_NAMES;
+  }
+
+  /** id → picker label for host-registered families (empty by default). */
+  public static get customFamilyLabels(): ReadonlyMap<number, string> {
+    return Fonts._customFamilyLabels;
+  }
+
+  /**
+   * ids of host-registered families, in registration order. Empty unless a
+   * host called {@link registerCustomFonts}. Used by the FontPicker to REPLACE
+   * the built-in quick-select fonts with the host's own families/weights.
+   */
+  public static get customFamilyIds(): readonly number[] {
+    return Array.from(CUSTOM_FONT_FAMILY_NAMES.keys());
+  }
+
+  /**
+   * Host-facing API: register custom font families that REPLACE the default
+   * font choices in the picker. Each definition is one registered family (in
+   * the Praksis use-case, each is a distinct *weight* of the same typeface,
+   * since Excalidraw elements carry a fontFamily id but no fontWeight).
+   *
+   * Safe to call before or after lazy init — it merges into the live registry
+   * and never overrides a family that is already registered under the same id.
+   * Host must own its id space (use large ids, e.g. >= 1_000_000, so they
+   * never collide with built-ins or the reserved fallbacks).
+   */
+  public static registerCustomFonts(
+    definitions: ReadonlyArray<CustomFontFamilyDefinition>,
+  ): void {
+    if (!definitions.length) {
+      return;
+    }
+
+    // ensure the built-in registry exists first (without clobbering it)
+    const registered = Fonts.registered;
+
+    for (const def of definitions) {
+      if (registered.has(def.id)) {
+        // never override an already-registered family (idempotent re-register)
+        continue;
+      }
+
+      const metadata: FontMetadata = {
+        metrics: def.metrics ?? FONT_METADATA[FONT_FAMILY.Nunito].metrics,
+        icon: def.icon,
+      };
+
+      registered.set(def.id, {
+        metadata,
+        fontFaces: def.fontFaces.map(
+          ({ uri, descriptors }) =>
+            new ExcalidrawFontFace(def.family, uri, descriptors),
+        ),
+      });
+
+      CUSTOM_FONT_FAMILY_NAMES.set(def.id, def.family);
+      if (def.label) {
+        Fonts._customFamilyLabels.set(def.id, def.label);
+      }
+    }
+  }
+
   /**
    * WARN: should be called just once on init, even across multiple instances.
    */
@@ -488,4 +572,29 @@ export const getLineHeight = (fontFamily: FontFamilyValues) => {
 export interface ExcalidrawFontFaceDescriptor {
   uri: string;
   descriptors?: FontFaceDescriptors;
+}
+
+/**
+ * Praksis fork (funn 3): a host-defined font family that replaces the built-in
+ * font choices in the picker. In the Praksis use-case each definition is one
+ * *weight* of the same typeface (Excalidraw elements carry a fontFamily id but
+ * no fontWeight, so each weight must be its own registered family).
+ */
+export interface CustomFontFamilyDefinition {
+  /**
+   * Numeric family id stored on the element. Host owns this id space — use
+   * large ids (e.g. >= 1_000_000) so they never collide with built-in fonts
+   * or the reserved fallback ids.
+   */
+  id: number;
+  /** CSS `font-family` name. Must match the @font-face the host provides. */
+  family: string;
+  /** one source per definition (usually a single weight of the typeface). */
+  fontFaces: ExcalidrawFontFaceDescriptor[];
+  /** label shown in the picker (e.g. "Normal" / "Medium" / "Halvfet"). */
+  label?: string;
+  /** icon shown in the picker's quick-select row. */
+  icon?: FontMetadata["icon"];
+  /** font metrics; defaults to Nunito's if omitted. */
+  metrics?: FontMetadata["metrics"];
 }

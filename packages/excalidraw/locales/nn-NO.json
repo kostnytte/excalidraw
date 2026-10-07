@@ -29,7 +29,7 @@
     "strokeStyle_dashed": "Stipla",
     "strokeStyle_dotted": "Prikka",
     "sloppiness": "Ujamnheit",
-    "opacity": "Synlegheit",
+    "opacity": "Dekkevne",
     "textAlign": "Tekstjustering",
     "edges": "Kanter",
     "sharp": "Skarp",
@@ -138,7 +138,12 @@
     "removeAllElementsFromFrame": "",
     "eyeDropper": "",
     "textToDiagram": "",
-    "prompt": ""
+    "prompt": "",
+    "style": "Stil",
+    "moreStyleOptions": "Fleire stilval",
+    "arrowtypes": "Piltype",
+    "copyElementLink": "Kopier lenke til objekt",
+    "more_options": "Fleire val"
   },
   "library": {
     "noItems": "",

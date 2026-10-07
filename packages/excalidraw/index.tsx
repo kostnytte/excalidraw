@@ -11,6 +11,7 @@ import "./fonts/fonts.css";
 import type { AppProps, ExcalidrawProps } from "./types";
 import { defaultLang } from "./i18n";
 import { DEFAULT_UI_OPTIONS } from "./constants";
+import { Fonts } from "./fonts/Fonts";
 import { EditorJotaiProvider, editorJotaiStore } from "./editor-jotai";
 import Footer from "./components/footer/FooterCenter";
 import MainMenu from "./components/main-menu/MainMenu";
@@ -52,7 +53,17 @@ const ExcalidrawBase = (props: ExcalidrawProps) => {
     renderEmbeddable,
     aiEnabled,
     showDeprecatedFonts,
+    fontFamilies,
   } = props;
+
+  // Praksis fork (funn 3): register host-supplied font families BEFORE the
+  // scene's fonts are loaded, so canvas text renders in them and the picker
+  // offers them. `registerCustomFonts` is idempotent (skips already-registered
+  // ids), so this is safe to run on every render. No-op when the prop is
+  // absent → upstream behaviour is untouched.
+  if (fontFamilies?.length) {
+    Fonts.registerCustomFonts(fontFamilies);
+  }
 
   const canvasActions = props.UIOptions?.canvasActions;
   const chrome = props.UIOptions?.chrome;
@@ -207,9 +218,9 @@ const areEqual = (prevProps: ExcalidrawProps, nextProps: ExcalidrawProps) => {
       });
     }
     if (key === "chrome") {
-      const chromeOptionKeys = Object.keys(prevUIOptions.chrome!) as (keyof NonNullable<
-        typeof DEFAULT_UI_OPTIONS.chrome
-      >)[];
+      const chromeOptionKeys = Object.keys(
+        prevUIOptions.chrome!,
+      ) as (keyof NonNullable<typeof DEFAULT_UI_OPTIONS.chrome>)[];
       return chromeOptionKeys.every((key) => {
         return prevUIOptions?.chrome?.[key] === nextUIOptions?.chrome?.[key];
       });
@@ -272,6 +283,12 @@ export {
   DEFAULT_LASER_COLOR,
   UserIdleState,
 } from "./constants";
+
+// Praksis fork (funn 3): host-facing font registration API. Hosts can register
+// custom font families (each = one weight) either via the `fontFamilies` prop
+// or imperatively via `Fonts.registerCustomFonts(...)` before mounting.
+export { Fonts } from "./fonts/Fonts";
+export type { CustomFontFamilyDefinition } from "./fonts/Fonts";
 
 export {
   mutateElement,

@@ -10,6 +10,7 @@ import {
   FreedrawIcon,
 } from "../icons";
 import { ButtonSeparator } from "../ButtonSeparator";
+import { Fonts } from "../../fonts/Fonts";
 import type { FontFamilyValues } from "../../element/types";
 import { FONT_FAMILY } from "../../constants";
 import { t } from "../../i18n";
@@ -37,14 +38,40 @@ export const DEFAULT_FONTS = [
   },
 ];
 
-const defaultFontFamilies = new Set(DEFAULT_FONTS.map((x) => x.value));
+/**
+ * Praksis fork (funn 3): the quick-select fonts shown in the picker. When a
+ * host has registered custom families (weights) via `Fonts.registerCustomFonts`
+ * they REPLACE the built-in three, so the picker shows the host's own
+ * weight labels (Normal / Medium / Halvfet …) instead of Excalidraw's
+ * typefaces. Falls back to `DEFAULT_FONTS` when no host fonts are registered,
+ * leaving upstream behaviour untouched.
+ */
+export const getQuickSelectFonts = () => {
+  const customIds = Fonts.customFamilyIds;
+  if (!customIds.length) {
+    return DEFAULT_FONTS;
+  }
+  const labels = Fonts.customFamilyLabels;
+  const names = Fonts.customFamilyNames;
+  return customIds.map((value, index) => ({
+    value,
+    icon: FontFamilyNormalIcon,
+    text: labels.get(value) ?? names.get(value) ?? `Font ${index + 1}`,
+    testId: `font-family-custom-${index}`,
+  }));
+};
 
 export const isDefaultFont = (fontFamily: number | null) => {
   if (!fontFamily) {
     return false;
   }
 
-  return defaultFontFamilies.has(fontFamily);
+  const customIds = Fonts.customFamilyIds;
+  if (customIds.length) {
+    return customIds.includes(fontFamily);
+  }
+
+  return DEFAULT_FONTS.some((x) => x.value === fontFamily);
 };
 
 interface FontPickerProps {
@@ -67,7 +94,12 @@ export const FontPicker = React.memo(
     onLeave,
     onPopupChange,
   }: FontPickerProps) => {
-    const defaultFonts = useMemo(() => DEFAULT_FONTS, []);
+    const quickSelectFonts = useMemo(() => getQuickSelectFonts(), []);
+    // Praksis fork (funn 3): when the host has registered its own font
+    // families (weights), those ARE the full set of choices — drop the "more
+    // fonts" searchable list (which would otherwise surface the built-in
+    // Excalidraw typefaces) so the picker only offers the host's weights.
+    const hasCustomFonts = Fonts.customFamilyIds.length > 0;
     const onSelectCallback = useCallback(
       (value: number | false) => {
         if (value) {
@@ -81,25 +113,29 @@ export const FontPicker = React.memo(
       <div role="dialog" aria-modal="true" className="FontPicker__container">
         <ButtonIconSelect<FontFamilyValues | false>
           type="button"
-          options={defaultFonts}
+          options={quickSelectFonts}
           value={selectedFontFamily}
           onClick={onSelectCallback}
         />
-        <ButtonSeparator />
-        <Popover.Root open={isOpened} onOpenChange={onPopupChange}>
-          <FontPickerTrigger selectedFontFamily={selectedFontFamily} />
-          {isOpened && (
-            <FontPickerList
-              selectedFontFamily={selectedFontFamily}
-              hoveredFontFamily={hoveredFontFamily}
-              onSelect={onSelectCallback}
-              onHover={onHover}
-              onLeave={onLeave}
-              onOpen={() => onPopupChange(true)}
-              onClose={() => onPopupChange(false)}
-            />
-          )}
-        </Popover.Root>
+        {!hasCustomFonts && (
+          <>
+            <ButtonSeparator />
+            <Popover.Root open={isOpened} onOpenChange={onPopupChange}>
+              <FontPickerTrigger selectedFontFamily={selectedFontFamily} />
+              {isOpened && (
+                <FontPickerList
+                  selectedFontFamily={selectedFontFamily}
+                  hoveredFontFamily={hoveredFontFamily}
+                  onSelect={onSelectCallback}
+                  onHover={onHover}
+                  onLeave={onLeave}
+                  onOpen={() => onPopupChange(true)}
+                  onClose={() => onPopupChange(false)}
+                />
+              )}
+            </Popover.Root>
+          </>
+        )}
       </div>
     );
   },

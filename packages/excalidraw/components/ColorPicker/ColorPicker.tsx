@@ -51,6 +51,12 @@ interface ColorPickerProps {
   appState: AppState;
   palette?: ColorPaletteCustom | null;
   topPicks?: ColorTuple;
+  /**
+   * Praksis compact context bar: render only the color-indicator trigger
+   * (single swatch that opens the full picker popover) and drop the inline
+   * quick-pick row + separator. Keeps the context bar to one control per color.
+   */
+  hideTopPicks?: boolean;
   updateData: (formData?: any) => void;
 }
 
@@ -187,6 +193,10 @@ const ColorPickerTrigger = ({
       })}
       aria-label={label}
       style={color ? { "--swatch-color": color } : undefined}
+      // Praksis compact bar hook: lets the compact context bar render the
+      // stroke swatch as a ring and the fill swatch as a filled square,
+      // without affecting the upstream property panel (flag-gated CSS scope).
+      data-color-role={type === "elementStroke" ? "stroke" : "background"}
       title={
         type === "elementStroke"
           ? t("labels.showStroke")
@@ -206,19 +216,24 @@ export const ColorPicker = ({
   elements,
   palette = COLOR_PALETTE,
   topPicks,
+  hideTopPicks = false,
   updateData,
   appState,
 }: ColorPickerProps) => {
   return (
     <div>
       <div role="dialog" aria-modal="true" className="color-picker-container">
-        <TopPicks
-          activeColor={color}
-          onChange={onChange}
-          type={type}
-          topPicks={topPicks}
-        />
-        <ButtonSeparator />
+        {!hideTopPicks && (
+          <>
+            <TopPicks
+              activeColor={color}
+              onChange={onChange}
+              type={type}
+              topPicks={topPicks}
+            />
+            <ButtonSeparator />
+          </>
+        )}
         <Popover.Root
           open={appState.openPopup === type}
           onOpenChange={(open) => {

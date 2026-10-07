@@ -4769,6 +4769,10 @@ class App extends React.Component<AppProps, AppState> {
     this.setState({ openDialog: dialogType });
   };
 
+  setOpenPopup = (openPopup: AppState["openPopup"]) => {
+    this.setState({ openPopup });
+  };
+
   private setCursor = (cursor: string) => {
     setCursor(this.interactiveCanvas, cursor);
   };

@@ -383,21 +383,36 @@ body.excalidraw-cursor-resize * {
     }
   }
 
-  .selected-shape-actions--bottom {
+  .App-bottom-context-actions {
     position: absolute;
     left: 50%;
-    bottom: calc(100% + 0.5rem);
+    bottom: calc(5.75rem + var(--sab, 0px));
     transform: translateX(-50%);
-    z-index: 1;
+    z-index: var(--zIndex-layerUI);
+    pointer-events: none;
+    width: max-content;
     max-width: min(calc(100vw - 28rem), 60rem);
 
+    > * {
+      pointer-events: var(--ui-pointerEvents);
+    }
+  }
+
+  .selected-shape-actions--bottom {
+    display: block;
+    width: max-content;
+    max-width: 100%;
+
     .App-toolbar-context {
+      position: static;
+      width: max-content;
       max-width: 100%;
       overflow-x: auto;
       padding: 0.25rem;
     }
 
     .panelColumn {
+      width: max-content;
       flex-direction: row;
       align-items: center;
       column-gap: 0.25rem;
@@ -424,6 +439,507 @@ body.excalidraw-cursor-resize * {
       .buttonList {
         flex-wrap: nowrap;
         gap: 0.25rem;
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Praksis fork: compact contextual bar (UIOptions.chrome.compactContextBar)
+  // Design pass: calm, self-explanatory, Miro-like. All spacing on a 4px grid.
+  // ---------------------------------------------------------------------------
+  .selected-shape-actions--compact {
+    display: block;
+    width: max-content;
+    max-width: 100%;
+
+    .compact-context-island {
+      width: max-content;
+      max-width: 100%;
+    }
+  }
+
+  .compact-context {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 4px;
+    white-space: nowrap;
+
+    &__color {
+      display: flex;
+      align-items: center;
+
+      // hide the color action's decorative heading in the compact bar
+      h3 {
+        display: none;
+      }
+
+      // Funn 2 (r3) — collapse the color action's wrappers so the swatch has
+      // no phantom width.
+      //
+      // Root cause of the uneven gaps: <ColorPicker> renders an unstyled outer
+      // <div> wrapping `.color-picker-container`, which is a 3-column grid
+      // (`1fr 20px 1.625rem`) sized for [top-picks | separator | trigger].
+      // In compact mode we pass `hideTopPicks`, so the first two columns are
+      // EMPTY — but the `1fr` column still stretches, injecting a large blank
+      // gap before the next control. We reduce the container to just the
+      // trigger cell (no empty columns, no vertical padding, no stray margins)
+      // so swatches sit tight on the 4px rhythm regardless of element type.
+      > div {
+        display: flex;
+        align-items: center;
+      }
+
+      .color-picker-container {
+        display: flex;
+        grid-template-columns: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      // Discreet transparent checkerboard (smaller squares, low contrast) so a
+      // "no color" swatch reads as intentionally empty, not noisy.
+      .color-picker__button.is-transparent {
+        background-size: 6px 6px;
+        opacity: 0.85;
+      }
+    }
+
+    // Stroke swatch reads as a hollow RING in the stroke color…
+    &__color--stroke .color-picker__button:not(.is-transparent) {
+      background-color: transparent !important;
+      border: 3px solid var(--swatch-color, var(--color-gray-40));
+    }
+
+    // …fill swatch reads as a filled square (default swatch look, kept solid).
+    &__color--fill .color-picker__button {
+      border-radius: 4px;
+    }
+
+    &__divider {
+      // Funn 2 (r3) — a hairline group separator that sits on the 4px rhythm.
+      // The row already has `gap: 4px`, so the divider adds NO horizontal
+      // margin of its own (previously `margin: 2px 4px` stacked on top of the
+      // flex gap → ~12px of uneven whitespace around each divider). Vertical
+      // insets keep it from touching the island edges.
+      width: 1px;
+      align-self: stretch;
+      margin: 4px 0;
+      background: var(--default-border-color);
+      opacity: 0.6;
+    }
+
+    &__trigger {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      height: 2rem;
+      min-width: 2rem;
+      padding: 0 6px;
+      border: none;
+      border-radius: var(--border-radius-lg, 0.5rem);
+      background: transparent;
+      color: var(--icon-fill-color, var(--text-primary-color));
+      font-family: inherit;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+
+      .compact-context__trigger-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      svg {
+        width: 1rem;
+        height: 1rem;
+      }
+
+      &--labeled {
+        padding-inline: 8px;
+      }
+
+      &__trigger-label,
+      .compact-context__trigger-label {
+        line-height: 1;
+      }
+
+      &:hover {
+        background: var(--button-hover-bg, var(--island-bg-color));
+      }
+
+      &--active {
+        background: var(--color-primary-light, var(--island-bg-color));
+        color: var(--color-primary, var(--text-primary-color));
+      }
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Stil / type popovers: option groups render as HORIZONTAL segmented button
+  // groups (no vertical radio rows, no radio circles). The property panel's
+  // horizontal `.buttonList` styling is scoped to `.panelColumn`, so we
+  // re-establish it here for the popover's own fieldsets.
+  // ---------------------------------------------------------------------------
+  .compact-context__popover-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 15rem;
+    max-width: 16.25rem; // ~260px — tighter popover (funn 3)
+
+    fieldset {
+      margin: 0;
+      padding: 0;
+      border: none;
+
+      legend {
+        // smaller, muted section labels (funn 3)
+        margin-bottom: 4px;
+        padding: 0;
+        font-size: 0.6875rem; // ~11px
+        font-weight: 500;
+        letter-spacing: 0.01em;
+        color: var(--text-primary-color);
+        opacity: 0.6;
+      }
+    }
+
+    // Horizontal segmented group rendered as a visible PILL container (funn 3):
+    // a surface-tinted, rounded, bordered track with equal-width buttons. The
+    // selected value reads as a filled + bordered button (monochrome — NOT a
+    // bare blue ring), unselected values are plain buttons inside the pill.
+    .buttonList {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 2px;
+      padding: 3px;
+      border-radius: var(--border-radius-lg, 0.5rem);
+      // surface distinct from the popover's own island background so the pill
+      // is actually visible sitting on top of it.
+      background: var(--color-surface-low, var(--island-bg-color));
+      box-shadow: inset 0 0 0 1px var(--default-border-color);
+
+      // radio circles are never shown — selection is the highlighted button
+      input[type="radio"],
+      input[type="button"] {
+        opacity: 0;
+        position: absolute;
+        pointer-events: none;
+      }
+
+      label,
+      button,
+      .zIndexButton {
+        flex: 1 1 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.75rem;
+        height: 1.625rem;
+        margin: 0;
+        border-radius: calc(var(--border-radius-lg, 0.5rem) - 3px);
+        background: transparent;
+        border: 1px solid transparent;
+        cursor: pointer;
+        color: var(--icon-fill-color, var(--text-primary-color));
+
+        svg {
+          width: 1rem;
+          height: 1rem;
+        }
+
+        &:hover {
+          background: var(--button-hover-bg, var(--color-gray-20));
+        }
+
+        // Selected = monochrome filled + bordered button inside the pill
+        // (a raised chip on the recessed track — not a bare blue ring).
+        &.active {
+          background: var(--popup-bg-color, #fff);
+          border-color: var(--color-gray-40, #b8b8b8);
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+          color: var(--text-primary-color);
+        }
+      }
+    }
+
+    // arrowheads use IconPicker (start/slot end pair) — keep the pair legible.
+    .iconSelectList {
+      flex-wrap: wrap;
+    }
+
+    // Fontfamily (funn 6): the FontPicker renders a segmented `.buttonList` of
+    // default fonts + a separator + a "more fonts" trigger. Lay it out as one
+    // consistent row so the whole control reads like the other pill groups
+    // (no mix of framed / loose icons).
+    .FontPicker__container {
+      display: flex;
+      align-items: stretch;
+      gap: 4px;
+
+      .buttonList {
+        flex: 1 1 auto;
+      }
+
+      // the vertical separator between default fonts and "more fonts"
+      .buttonSeparator {
+        display: none;
+      }
+
+      // the "more fonts" trigger reads as a matching square pill button.
+      .properties-trigger {
+        flex: 0 0 auto;
+        width: 1.75rem;
+        height: 1.625rem;
+        border-radius: var(--border-radius-lg, 0.5rem);
+        border: 1px solid var(--default-border-color);
+        background: var(--color-surface-low, var(--island-bg-color));
+
+        &:hover {
+          background: var(--button-hover-bg, var(--color-gray-20));
+        }
+      }
+    }
+
+    // opacity: full-width slider with a visible track, thumb and a live value
+    // readout shown to the right of the label (funn 4). The shared Range
+    // component's 0/100 endpoint labels are suppressed here.
+    .control-label {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      font-size: 0.6875rem;
+      font-weight: 500;
+      color: var(--text-primary-color);
+      opacity: 1;
+
+      // label row: "Dekkevne" left, live value ("100 %") pinned top-right.
+      position: relative;
+
+      .range-wrapper {
+        width: 100%;
+        padding-top: 6px;
+        padding-bottom: 6px;
+      }
+
+      // Funn 1 (r3) — the slider track was invisible in the compact popover.
+      //
+      // Root cause: the shared <Range> paints its track via an INLINE
+      // `background: linear-gradient(... var(--color-slider-track) ...% ,
+      // var(--button-bg) ...%)` set from JS. `--button-bg` is only defined
+      // inside the left properties panel (`.App-menu__left`), and our popover
+      // is a Radix portal rendered OUTSIDE that scope, so `--button-bg`
+      // resolved to nothing → the whole gradient became an invalid value →
+      // the browser dropped the inline `background` entirely, leaving only the
+      // native thumb ("loose dot on white", no track).
+      //
+      // Fix: define `--button-bg` (the unfilled right portion) in the popover
+      // scope so the JS gradient resolves in BOTH themes, and give the input a
+      // self-contained CSS track as a belt-and-suspenders fallback for the
+      // moment before the JS effect runs.
+      --button-bg: var(--color-surface-mid, var(--island-bg-color));
+
+      .range-input {
+        width: 100%;
+        height: 4px;
+        border-radius: 2px;
+        // fallback track (filled colour) shown until the inline gradient lands;
+        // never depends on --button-bg so it can't collapse to invalid.
+        background: var(--color-slider-track);
+      }
+
+      // hide the shared component's 0-endpoint label (funn 4)
+      .zero-label {
+        display: none;
+      }
+
+      // live value bubble → top-right of the label, suffixed with " %".
+      .value-bubble {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: auto;
+        left: auto !important; // JS sets left; override to pin right
+        transform: none;
+        font-size: 0.6875rem;
+        font-weight: 500;
+        opacity: 0.8;
+
+        &::after {
+          content: " %";
+        }
+
+        // an empty bubble (value 0) must not render a lone " %"
+        &:empty::after {
+          content: "";
+        }
+      }
+    }
+  }
+
+  // "Flere stilvalg" expander (roughness / edges) — collapsed by default.
+  .compact-context__expander {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    &-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 4px 0;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-primary-color);
+      opacity: 0.75;
+      cursor: pointer;
+
+      &:hover {
+        opacity: 1;
+      }
+    }
+
+    &-caret {
+      transition: transform 0.12s ease;
+
+      &--open {
+        transform: rotate(180deg);
+      }
+    }
+
+    &-body {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // "Mer" menu: real menu with icon + text rows.
+  // ---------------------------------------------------------------------------
+  .compact-context__popover--menu {
+    min-width: 13rem;
+  }
+
+  .compact-context__menu {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 12rem;
+
+    &-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 6px 8px;
+      border: none;
+      border-radius: var(--border-radius-md, 0.375rem);
+      background: transparent;
+      font-family: inherit;
+      font-size: 0.8125rem;
+      color: var(--text-primary-color);
+      cursor: pointer;
+      text-align: start;
+
+      .compact-context__menu-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1rem;
+        height: 1rem;
+        flex: 0 0 auto;
+
+        svg {
+          width: 1rem;
+          height: 1rem;
+        }
+      }
+
+      .compact-context__menu-label {
+        flex: 1 1 auto;
+      }
+
+      .compact-context__menu-shortcut {
+        flex: 0 0 auto;
+        font-size: 0.6875rem;
+        opacity: 0.55;
+        letter-spacing: 0.02em;
+      }
+
+      &:hover {
+        background: var(--button-hover-bg, var(--color-gray-20));
+      }
+
+      &--danger {
+        color: var(--color-danger, #d92d20);
+
+        &:hover {
+          background: var(--color-danger-light, rgba(217, 45, 32, 0.1));
+        }
+      }
+    }
+
+    &-divider {
+      height: 1px;
+      margin: 4px 0;
+      background: var(--default-border-color);
+      opacity: 0.6;
+    }
+
+    &-section {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 4px 0;
+
+      &-label {
+        padding-inline: 8px;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--text-primary-color);
+        opacity: 0.5;
+      }
+    }
+
+    // layer-order + align: one horizontal row of icon buttons with tooltips.
+    .compact-context__order-row,
+    .compact-context__align-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2px;
+      padding: 2px 6px;
+
+      button,
+      .zIndexButton {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.75rem;
+        height: 1.75rem;
+        border: none;
+        border-radius: var(--border-radius-md, 0.375rem);
+        background: transparent;
+        cursor: pointer;
+        color: var(--icon-fill-color, var(--text-primary-color));
+
+        svg {
+          width: 1rem;
+          height: 1rem;
+        }
+
+        &:hover {
+          background: var(--button-hover-bg, var(--color-gray-20));
+        }
       }
     }
   }
